@@ -32,6 +32,7 @@ import 'package:flauncher/providers/notifications_service.dart';
 import 'package:flauncher/providers/watch_next_service.dart';
 import 'package:flauncher/providers/weather_service.dart';
 import 'package:flauncher/providers/backup_service.dart';
+import 'package:flauncher/providers/link_cards_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -109,6 +110,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
             create: (_) => SettingsService(sharedPreferences),
+            lazy: false),
+        ChangeNotifierProvider(
+            create: (_) => LinkCardsService(fLauncherDatabase),
             lazy: false),
         ChangeNotifierProvider(
             create: (context) {

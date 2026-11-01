@@ -29,6 +29,7 @@ import 'package:flauncher/widgets/focus_aware_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flauncher/widgets/continue_watching_row.dart';
+import 'package:flauncher/widgets/link_cards_section.dart';
 import 'package:flauncher/providers/watch_next_service.dart';
 import 'package:flauncher/providers/settings_service.dart';
 import 'package:flauncher/l10n/app_localizations.dart';
@@ -165,6 +166,13 @@ class _FLauncherState extends State<FLauncher> {
               key: sectionKey,
               category: category,
               applications: category.applications,
+              isFirstSection: isFirstSection
+          );
+          break;
+        case CategoryType.links:
+          categoryWidget = LinkCardsSection(
+              key: sectionKey,
+              category: category,
               isFirstSection: isFirstSection
           );
           break;
