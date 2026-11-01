@@ -19,6 +19,7 @@
 import 'dart:async';
 
 import 'package:flauncher/providers/apps_service.dart';
+import 'package:flauncher/widgets/link_cards_remote_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +41,7 @@ const List<String> sectionNamePresets = [
   'News',
   'Tools',
   'Favorites',
+  'Links',
   'Custom...',
 ];
 
@@ -541,12 +543,18 @@ class _CategorySettingsState extends State<_CategorySettings>
                 DropdownMenuItem(
                   value: CategoryType.grid,
                   child: Text(localizations.grid, style: Theme.of(context).textTheme.bodySmall)
+                ),
+                DropdownMenuItem(
+                  value: CategoryType.links,
+                  child: Text('Links', style: Theme.of(context).textTheme.bodySmall)
                 )
               ]
             )
           )
         ),
-        if (_categoryType == CategoryType.grid)
+        if (_categoryType == CategoryType.links)
+          LinkCardsRemotePanel(savedCategory: !_creating),
+        if (_categoryType == CategoryType.grid || _categoryType == CategoryType.links)
           _listTile(
             context,
             Text(localizations.columnCount),
