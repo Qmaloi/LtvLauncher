@@ -240,6 +240,88 @@ class FLauncherDatabase extends _$FLauncherDatabase
     return select(apps).get();
   }
 
+  Future<void> ensureLinkCardsTable() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS link_cards (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+        title TEXT NOT NULL,
+        image_url TEXT NOT NULL DEFAULT '',
+        target_url TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        sort_order INTEGER NOT NULL DEFAULT 0
+      );
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_link_cards_category_order
+      ON link_cards(category_id, sort_order, id);
+    ''');
+  }
+
+  Future<List<Map<String, dynamic>>> getLinkCards() async {
+    await ensureLinkCardsTable();
+    final rows = await customSelect('''
+      SELECT id, category_id, title, image_url, target_url, description, sort_order
+      FROM link_cards
+      ORDER BY category_id, sort_order, id
+    ''').get();
+    return rows.map((row) => row.data).toList(growable: false);
+  }
+
+  Future<int> insertLinkCard({
+    required int categoryId,
+    required String title,
+    required String imageUrl,
+    required String targetUrl,
+    required String description,
+    required int order,
+  }) async {
+    await ensureLinkCardsTable();
+    await customStatement('''
+      INSERT INTO link_cards(category_id, title, image_url, target_url, description, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?)
+    ''', variables: [
+      Variable.withInt(categoryId),
+      Variable.withString(title),
+      Variable.withString(imageUrl),
+      Variable.withString(targetUrl),
+      Variable.withString(description),
+      Variable.withInt(order),
+    ]);
+    final row = await customSelect('SELECT last_insert_rowid() AS id').getSingle();
+    return row.read<int>('id');
+  }
+
+  Future<void> updateLinkCard({
+    required int id,
+    required int categoryId,
+    required String title,
+    required String imageUrl,
+    required String targetUrl,
+    required String description,
+    required int order,
+  }) async {
+    await ensureLinkCardsTable();
+    await customStatement('''
+      UPDATE link_cards
+      SET category_id = ?, title = ?, image_url = ?, target_url = ?, description = ?, sort_order = ?
+      WHERE id = ?
+    ''', variables: [
+      Variable.withInt(categoryId),
+      Variable.withString(title),
+      Variable.withString(imageUrl),
+      Variable.withString(targetUrl),
+      Variable.withString(description),
+      Variable.withInt(order),
+      Variable.withInt(id),
+    ]);
+  }
+
+  Future<void> deleteLinkCard(int id) async {
+    await ensureLinkCardsTable();
+    await customStatement('DELETE FROM link_cards WHERE id = ?', variables: [Variable.withInt(id)]);
+  }
+
   Future<int?> nextAppCategoryOrder(int categoryId) async {
     final query = selectOnly(appsCategories);
     final maxExpression = coalesce([appsCategories.order.max(), const Constant(-1)]) + const Constant(1);

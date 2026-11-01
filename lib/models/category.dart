@@ -37,6 +37,7 @@ enum CategoryType
 {
   row,
   grid,
+  links,
 }
 
 class LauncherSection

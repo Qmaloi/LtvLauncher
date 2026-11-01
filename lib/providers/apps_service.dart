@@ -102,6 +102,7 @@ class AppsService extends ChangeNotifier {
     } else {
       await _ensureTvAppsSectionOrder();
     }
+    await _ensureLinksCategory();
 
     _fLauncherChannel.addAppsChangedListener((event) async {
       String? changedPackageName;
@@ -270,6 +271,25 @@ class AppsService extends ChangeNotifier {
 
       await addCategory("Favorites", shouldNotifyListeners: false);
     });
+  }
+
+  Future<void> _ensureLinksCategory() async {
+    final existing = _categoriesById.values.where((category) =>
+        category.type == CategoryType.links || category.name.toLowerCase() == 'links');
+    final category = existing.isEmpty ? null : existing.first;
+    if (category == null) {
+      await addCategory('Links', type: CategoryType.links, shouldNotifyListeners: false);
+    } else if (category.type != CategoryType.links) {
+      await updateCategory(
+        category.id,
+        category.name,
+        category.sort,
+        CategoryType.links,
+        category.columnsCount,
+        category.rowHeight,
+        shouldNotifyListeners: false,
+      );
+    }
   }
 
   /// Ensures that "TV Apps" section is placed above "Non-TV Apps" section by default.
@@ -877,7 +897,14 @@ class AppsService extends ChangeNotifier {
     try {
       newCategoryId = await _database.transaction(() async {
         int newCategoryId = await _database.insertCategory(
-            CategoriesCompanion.insert(name: categoryName, order: order));
+            CategoriesCompanion(
+              name: Value(categoryName),
+              sort: Value(sort),
+              type: Value(type),
+              rowHeight: Value(rowHeight),
+              columnsCount: Value(columnsCount),
+              order: Value(order),
+            ));
         return newCategoryId;
       });
 
